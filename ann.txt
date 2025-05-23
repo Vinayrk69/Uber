@@ -1,0 +1,79 @@
+import os 
+import cv2 
+import numpy as np 
+import tensorflow as tf 
+from sklearn.model_selection import train_test_split 
+from sklearn.metrics import accuracy_score, confusion_matrix 
+import matplotlib.pyplot as plt 
+import seaborn as sns 
+
+# Step 1: Extract frames from videos and save as images 
+video_root = 'Videos' # Directory containing video files 
+output_root = 'dataset' # Output directory to store extracted frames 
+classes = ['Punch', 'Kicking', 'Taking_Selfie', 'Pushing'] # Action classes 
+frames_per_class = 400 # Number of frames per class 
+frame_interval = 3 # Interval at which to extract frames 
+os.makedirs(output_root, exist_ok=True) 
+
+# Extract frames from videos for each class
+for cls in classes:
+    video_dir = os.path.join(video_root, cls)
+    output_dir = os.path.join(output_root, cls)
+    os.makedirs(output_dir, exist_ok=True)
+    total_saved = 0
+    for video_file in os.listdir(video_dir):
+        if not (video_file.endswith('.avi')) or total_saved >= frames_per_class:
+            continue
+        cap = cv2.VideoCapture(os.path.join(video_dir, video_file))
+        frame_count = 0
+        while cap.isOpened() and total_saved < frames_per_class:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            if frame_count % frame_interval == 0:
+                resized = cv2.resize(frame, (64, 64))
+                filename = os.path.join(output_dir, f'{cls}_{total_saved}.jpg')
+                cv2.imwrite(filename, resized)
+                total_saved += 1
+            frame_count += 1
+        cap.release()
+print("Frame extraction complete.") 
+
+# Step 2: Load images and labels into arrays
+X, y = [], []
+for idx, label in enumerate(classes):
+    folder = os.path.join(output_root, label)
+    for img_name in os.listdir(folder):
+        img_path = os.path.join(folder, img_name)
+        img = cv2.imread(img_path)
+        if img is not None:
+            img = img / 255.0 # Normalize
+            X.append(img)
+            y.append(idx)
+X = np.array(X)
+y = np.array(y)
+# Step 3: Split dataset into training and testing
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
+# Step 4: Build CNN model
+model = tf.keras.Sequential([
+tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(64, 64, 3)),
+tf.keras.layers.MaxPooling2D(2, 2),
+tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
+tf.keras.layers.MaxPooling2D(2, 2),
+tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
+tf.keras.layers.Flatten(),
+tf.keras.layers.Dense(128, activation='relu'),
+tf.keras.layers.Dense(4, activation='softmax')
+])
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+# Step 5: Train the model
+model.fit(X_train, y_train, epochs=10, validation_split=0.1)
+# Step 6: Evaluate model performance
+y_pred = np.argmax(model.predict(X_test), axis=1)
+acc = accuracy_score(y_test, y_pred)
+print("Accuracy:", acc)
+cm = confusion_matrix(y_test, y_pred)
+sns.heatmap(cm, annot=True, fmt='d', xticklabels=classes, yticklabels=classes)
+plt.xlabel("Predicted")
+plt.ylabel("Actual")
+plt.show()
