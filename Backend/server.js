@@ -1,14 +1,12 @@
-const http=require('http');
-const app=require('./app');
-const server=http.createServer(app);
-const port=process.env.PORT||3000;
-server.listen(port,()=>{
+const http = require('http');
+const app = require('./app');
+const { initializeSocket } = require('./socket');
+const port = process.env.PORT || 3000;
 
-    console.log(`server is running on port ${port}`);
+const server = http.createServer(app);
+
+initializeSocket(server);
+
+server.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
-// const app = require('./app');
-// const PORT = process.env.PORT || 4000;
-
-// app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-// });
