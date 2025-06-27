@@ -32,21 +32,28 @@ const UserSignup = () => {
       password: password
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, newUser)
 
-    if (response.status === 201) {
-      const data = response.data
-      setUser(data.user)
-      localStorage.setItem('token', data.token)
-      navigate('/home')
+      if (response.status === 201) {
+        const data = response.data
+        setUser(data.user)
+        localStorage.setItem('token', data.token)
+        navigate('/home')
+      }
+
+      setEmail('')
+      setFirstName('')
+      setLastName('')
+      setPassword('')
+    } catch (error) {
+      if (error.response) {
+        console.error('Server error:', error.response.data)
+        alert(error.response.data.message || 'Server error')
+      } else {
+        alert('An error occurred. Please try again.')
+      }
     }
-
-
-    setEmail('')
-    setFirstName('')
-    setLastName('')
-    setPassword('')
-
   }
   return (
     <div>

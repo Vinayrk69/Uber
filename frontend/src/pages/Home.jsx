@@ -61,6 +61,10 @@ const Home = () => {
 
     const handlePickupChange = async (e) => {
         setPickup(e.target.value)
+        if (!e.target.value.trim()) {
+            setPickupSuggestions([])
+            return;
+        }
         try {
             const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
                 params: { input: e.target.value },
@@ -77,6 +81,10 @@ const Home = () => {
 
     const handleDestinationChange = async (e) => {
         setDestination(e.target.value)
+        if (!e.target.value.trim()) {
+            setDestinationSuggestions([])
+            return;
+        }
         try {
             const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/maps/get-suggestions`, {
                 params: { input: e.target.value },
@@ -202,7 +210,7 @@ const Home = () => {
             <img className='w-16 absolute left-5 top-5' src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Uber_logo_2018.png" alt="" />
             <div className='h-screen w-screen'>
                 {/* image for temporary use  */}
-                <LiveTracking />
+                <LiveTracking origin={pickup || null} destination={destination || null} />
             </div>
             <div className=' flex flex-col justify-end h-screen absolute top-0 w-full'>
                 <div className='h-[30%] p-6 bg-white relative'>

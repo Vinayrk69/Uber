@@ -6,13 +6,13 @@ const containerStyle = {
     height: '100%',
 };
 
-const center = {
+const defaultCenter = {
     lat: -3.745,
     lng: -38.523
 };
 
 const LiveTracking = () => {
-    const [ currentPosition, setCurrentPosition ] = useState(center);
+    const [ currentPosition, setCurrentPosition ] = useState(defaultCenter);
 
     useEffect(() => {
         navigator.geolocation.getCurrentPosition((position) => {
@@ -32,25 +32,6 @@ const LiveTracking = () => {
         });
 
         return () => navigator.geolocation.clearWatch(watchId);
-    }, []);
-
-    useEffect(() => {
-        const updatePosition = () => {
-            navigator.geolocation.getCurrentPosition((position) => {
-                const { latitude, longitude } = position.coords;
-
-                console.log('Position updated:', latitude, longitude);
-                setCurrentPosition({
-                    lat: latitude,
-                    lng: longitude
-                });
-            });
-        };
-
-        updatePosition(); // Initial position update
-
-        const intervalId = setInterval(updatePosition, 1000); // Update every 10 seconds
-
     }, []);
 
     return (

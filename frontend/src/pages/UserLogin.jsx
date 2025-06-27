@@ -22,18 +22,25 @@ const UserLogin = () => {
       password: password
     }
 
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData)
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
 
-    if (response.status === 200) {
-      const data = response.data
-      setUser(data.user)
-      localStorage.setItem('token', data.token)
-      navigate('/home')
+      if (response.status === 200) {
+        const data = response.data;
+        setUser(data.user);
+        localStorage.setItem('token', data.token);
+        navigate('/home');
+      }
+
+      setEmail('');
+      setPassword('');
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        alert('Invalid email or password!');
+      } else {
+        alert('An error occurred. Please try again.');
+      }
     }
-
-
-    setEmail('')
-    setPassword('')
   }
 
   return (
